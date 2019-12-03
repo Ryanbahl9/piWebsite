@@ -16,6 +16,36 @@ def home():
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         past = (datetime.now() - timedelta(hours=24)).strftime('%Y-%m-%d %H:%M:%S')
 
+        cursor.execute( "SELECT date_time, speed_down, speed_up FROM inetLog WHERE date_time BETWEEN %s AND %s",
+            (past, now))
+        # cursor.execute("SELECT datetime, speed_down, speed_up FROM inetLog WHERE datetime BETWEEN %s AND %s;", (past, now))
+
+        downData = list()
+        upData = list()
+        for i in cursor:
+            downData.append((i[0], i[1]))
+            upData.append((i[0], i[2]))
+
+        line_chart = pygal.DateTimeLine(x_label_rotation=75, truncate_label=-1,
+                                        x_value_formatter=lambda dt: dt.strftime('%m-%d %H:%M'))
+        line_chart.add("Down Ave Hour", downData)
+        line_chart.add("Up", upData)
+        return line_chart.render_response()
+    except Exception:
+        return(str(Exception))
+
+
+
+@app.route("/ave")
+def devChart():
+    try:
+        cnx = mysql.connector.connect(user='dev0', password='Christa1', host='73.158.191.112',
+                                      database='inetSpeed')  # 73.158.191.112
+
+        cursor = cnx.cursor()
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        past = (datetime.now() - timedelta(hours=24)).strftime('%Y-%m-%d %H:%M:%S')
+
         cursor.execute(
             "SELECT"
             "  t1.date_time, "
